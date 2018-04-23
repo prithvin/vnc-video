@@ -1,18 +1,25 @@
 FROM ubuntu:16.04
 
 RUN apt-get update && \
-    apt-get install -y sudo && \
-    apt-get install --yes curl
+    apt-get install -y apt-utils sudo bzip2 && \
+    apt-get install --yes curl make && \
+    apt-get -y install gcc yasm
 
-RUN sudo apt-get  install -y xvfb x11vnc x11-xkb-utils xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic x11-apps
+RUN sudo apt-get  install -y xvfb xfonts-100dpi xfonts-75dpi xfonts-scalable xfonts-cyrillic 
+RUN sudo apt-get install -y ffmpeg 
 
-RUN apt-get install -y xvfb firefox
-RUN     mkdir ~/.vnc
-RUN     x11vnc -storepasswd 1234 ~/.vnc/passwd
-RUN     bash -c 'echo "firefox" >> /.bashrc'
+# Install libx264
+ENV X264_VERSION=20170226-2245-stable
+RUN \
+        DIR=/tmp/x264 && \
+        mkdir -p ${DIR} && \
+        cd ${DIR} && \
+        curl -sL https://download.videolan.org/pub/videolan/x264/snapshots/x264-snapshot-${X264_VERSION}.tar.bz2 | \
+        tar -jx --strip-components=1 && \
+        ./configure --prefix="${PREFIX}" --enable-shared --enable-pic --disable-cli# && \
+        make && \
+        make install && \
+        rm -rf ${DIR}
+RUN export DISPLAY=:1 && Xvfb :1 -screen 0 1366x768x16 &
 
-
-#RUN Xvfb :1 -screen 0 800x600x16
-
-#RUN DISPLAY=:1.0
 
